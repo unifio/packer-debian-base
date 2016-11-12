@@ -1,0 +1,50 @@
+---
+- name: Install main td-agent config
+  copy:
+    src: td-agent.conf
+    dest: /etc/td-agent/
+    owner: td-agent
+    group: td-agent
+    mode: 0644
+
+- name: Ensure some enviroment files exist
+  file: path="/etc/default/{{ item }}" state=touch
+  with_items:
+    - environment
+    - set-env
+
+- name: Install td-agent service
+  copy:
+    src: td-agent-pid.service
+    dest: /etc/systemd/system/
+    mode: 0755
+  notify:
+    - reload systemd
+    - restart td-agent-pid
+    - enable td-agent-pid
+
+- name: Install td-agent service
+  copy:
+    src: td-agent.service
+    dest: /etc/systemd/system/
+    mode: 0755
+  notify:
+    - reload systemd
+    - restart td-agent
+    - enable td-agent
+
+- name: Setup td-agent config.d directory and other configs
+  copy:
+    src: config.d
+    dest: /etc/td-agent/
+    owner: td-agent
+    group: td-agent
+    mode: 0755
+
+- name: Add unified.*.log cleanup cron (remove all files not modified in 10 days or more)
+  cron:
+    name: unified.*.log cleanup
+    state: present
+    job: "find /var/log/td-agent -type f -name \"unified.*.log\" -mtime +10 -delete"
+    hour: "0"
+    minute: "0"

@@ -1,0 +1,4 @@
+# TODO: push this back out to the individual stacks until there's a better handle on common patterns
+ATLASSIAN_CAT_OUT_TIMESTAMP %{YEAR}[/-]%{MONTHNUM}[/-]%{MONTHDAY} %{TIME}
+ATLASSIAN_CAT_LOG_TIMESTAMP %{MONTHDAY}[/-]%{MONTH}[/-]%{YEAR} %{TIME}
+ATLASSIAN_THREAD (\w|-)*

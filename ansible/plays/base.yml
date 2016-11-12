@@ -1,0 +1,11 @@
+---
+- name: Build Base Image
+  become: true
+  gather_facts: true
+  hosts: default
+
+  roles:
+    - role: common
+    - role: logging
+    - role: docker
+    - role: datadog

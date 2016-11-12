@@ -1,0 +1,9 @@
+---
+- name: reload systemd
+  shell: systemctl daemon-reload
+
+- name: restart chrony
+  service: name=chrony enabled=yes state=restarted
+
+- name: restart td-agent
+  shell: systemctl restart td-agent

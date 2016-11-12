@@ -1,0 +1,12 @@
+---
+- name: restart td-agent-pid
+  shell: systemctl restart td-agent-pid
+
+- name: enable td-agent-pid
+  shell: systemctl enable td-agent-pid
+
+- name: restart td-agent
+  shell: systemctl restart td-agent
+
+- name: enable td-agent
+  shell: systemctl enable td-agent

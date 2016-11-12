@@ -1,0 +1,30 @@
+---
+- name: apt-get update
+  apt: update_cache=yes
+
+- name: Upgrade all installed packages
+  apt: upgrade=yes
+
+- name: Install common packages
+  apt: pkg={{ item }} state=latest force=yes
+  with_items:
+    - chrony
+    - curl
+    - dbus
+    - dnsutils
+    - libffi-dev
+    - libssl-dev
+    - python-dev
+    - python-pip
+    - apt-transport-https
+    - wget
+    - ca-certificates
+    - jq
+  notify:
+    - restart chrony
+
+- name: Remove apt installed version of awscli
+  apt:
+    pkg: awscli
+    state: absent
+    force: yes

@@ -1,0 +1,3 @@
+---
+- include: packages_apt.yml
+- include: configure.yml

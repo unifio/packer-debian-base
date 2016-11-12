@@ -1,0 +1,18 @@
+---
+# Module parameters
+
+## Stack mappings
+
+### CI prerequisites
+circle-ci::module: 'modules/circle-ci'
+
+## State storage
+tf-state-bucket::state:
+  - atlas:
+      name: "unifio/%{hiera('stack_item_label')}-%{hiera('region')}-tfstate-bucket"
+
+circle-ci::state:
+  - s3:
+      bucket: "%{hiera('s3_state_bucket')}"
+      name: "%{hiera('region')}/circle-ci"
+      region: "%{hiera('region')}"

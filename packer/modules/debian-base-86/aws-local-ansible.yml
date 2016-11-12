@@ -1,0 +1,83 @@
+---
+variables:
+  description: 'Debian Base Image'
+  ansible_play: 'base-86'
+  serverspec: 'base-86'
+  slug: 'debian-base'
+  version: "{{ uuid }}"
+  box_bucket: ''
+  # Debian 8.6 cloud images: https://wiki.debian.org/Cloud/AmazonEC2Image/Jessie
+  region: 'us-east-1'
+  source_ami: 'ami-9d6c128a'
+  ami_groups: ''
+  ami_regions: ''
+  iam_profile: 'instance-base-unstable-tokyo-ap-northeast-1'
+  ansible_plays_dir: "{{ env `ANSIBLE_PLAYS_DIR` }}"
+  ansible_role_paths: "{{ env `ANSIBLE_ROLE_PATHS` }}"
+  ansible_root_dir: "{{ env `ANSIBLE_ROOT_DIR` }}"
+  ssh_keypair_name: 'unifiopub'
+
+description: "{{ user `description` }}"
+
+builders:
+  - type: 'amazon-ebs'
+    ssh_keypair_name: "{{ user `ssh_keypair_name` }}"
+    ssh_private_key_file: "{{ user `ssh_keypair_name` }}.pem"
+    region: "{{ user `region` }}"
+    source_ami: "{{ user `source_ami` }}"
+    iam_instance_profile: "{{ user `iam_profile` }}"
+    instance_type: 'm3.medium'
+    enhanced_networking: true
+    ssh_username: 'admin'
+    ssh_pty: true
+    ami_name: "{{ user `slug` }}-{{ user `version` }}"
+    ami_description: "{{ user `description` }}"
+    ami_groups: "{{ user `ami_groups` }}"
+    ami_regions: "{{ user `ami_regions` }}"
+    ami_block_device_mappings:
+      - device_name: '/dev/xvda'
+        volume_type: 'gp2'
+        delete_on_termination: true
+    tags:
+      App: "{{user `slug`}}"
+      Release: "{{ user `version` }}"
+
+provisioners:
+  - type: "shell"
+    pause_before: "10s"
+    inline:
+      - 'sudo apt-get update'
+      - 'sudo apt-get -y install aptitude ca-certificates'
+      - 'sudo update-ca-certificates'
+      - 'sudo apt-get -y upgrade'
+      # Docker cgroups
+      - 'sudo sed -i "s/GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)\"/GRUB_CMDLINE_LINUX_DEFAULT=\"\1 cgroup_enable=memory swapaccount=1\"/" /etc/default/grub'
+      - 'sudo update-grub'
+      - 'sudo shutdown -r now'
+
+  - type: 'ansible'
+    pause_before: "30s"
+    playbook_file: "./ansible/plays/{{ user `ansible_play` }}.yml"
+    extra_arguments: ["-vv"]
+    ansible_env_vars:
+      - "ANSIBLE_ROLES_PATH=:./ansible/roles/internal/:./ansible/roles/external/"
+      - "ANSIBLE_HOST_KEY_CHECKING=False"
+
+  - type: 'serverspec'
+    rake_file: 'Rakefile.serverspec'
+    rake_task: "serverspec:{{ user `serverspec` }}"
+    rake_env_vars: '$BUNDLE_GEMFILE=Gemfile'
+
+#post-processors:
+  #-
+    #- type: 'vagrant'
+      #output: "{{ user `slug` }}-{{ user `version` }}.box"
+
+    #- type: 'vagrant-s3'
+      #region: "{{user `region`}}"
+      #bucket: "{{user `box_bucket`}}"
+      #manifest: "{{ user `slug` }}"
+      #box_name: "{{ user `slug` }}"
+      #box_dir: 'boxes'
+      #acl: 'authenticated-read'
+      #version: "{{user `version`}}"

@@ -1,0 +1,7 @@
+---
+# Debian 8.6 base build
+
+debian-base::packer-module: 'modules/debian-base-86'
+modules::debian-base-86::args: '-on-error=ask'
+modules::debian-base-86::packer-template: 'modules/debian-base-86/aws-local-ansible.yml'
+#modules::debian-base-86::packer-vars-file: 'modules/debian-base-86/public.yaml'

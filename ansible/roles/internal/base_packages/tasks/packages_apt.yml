@@ -1,0 +1,39 @@
+---
+- name: apt-get update
+  apt: update_cache=yes
+
+- name: Install common packages
+  apt: pkg={{ item }} state=latest force=yes
+  with_items:
+    - apt-listchanges
+    - apt-transport-https
+    - chrony
+    - curl
+    - dnsutils
+    - jq
+    - python-pip
+    - python-yaml #set-env scripts
+    - unattended-upgrades
+    - wget
+  notify:
+    - restart chrony
+
+- name: Add gemfury unifio apt repo
+  apt_repository:
+    repo: "deb [trusted=yes] https://repo.fury.io/unifio/ /"
+    state: present
+
+- name: Install managed packages
+  apt: pkg={{ item }} state=latest force=yes
+  with_items:
+    - consul
+    - envconsul
+    - consul-template
+    - vault
+    - vault-ssh-helper
+
+- name: Remove apt installed version of awscli
+  apt:
+    pkg: awscli
+    state: absent
+    force: yes

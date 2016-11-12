@@ -1,0 +1,21 @@
+---
+- name: Install dependencies
+  apt: name={{ item }}
+  with_items:
+    - apt-transport-https
+    - ca-certificates
+    - python-pip
+
+- name: Add GPG key
+  apt_key:
+    url: https://apt.dockerproject.org/gpg
+    state: present
+    id: 2C52609D
+
+- name: Add docker apt repo
+  apt_repository:
+    repo: "deb https://apt.dockerproject.org/repo debian-{{ ansible_distribution_release }} main"
+    state: present
+
+- name: Install Docker
+  apt: name=docker-engine

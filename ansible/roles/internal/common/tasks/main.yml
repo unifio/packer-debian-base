@@ -1,0 +1,7 @@
+---
+- name: Fail if OS distro is not Debian
+  fail: msg="This role currently only supports Debian"
+  when: "{{ ansible_distribution != 'Debian' }}"
+
+- include: packages_apt.yml
+- include: packages_pip.yml

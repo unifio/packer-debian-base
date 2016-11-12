@@ -1,0 +1,17 @@
+.DS_Store
+.env
+.rbenv-vars
+tmp/
+
+ansible/roles/external/*
+ansible/plays/*.retry
+ansible/.vagrant/
+
+.terraform/*
+**/.terraform/*
+*.tfstate.backup
+*.tfstate
+
+.vagrant/*
+*.box
+*.pyc

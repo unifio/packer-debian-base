@@ -1,0 +1,13 @@
+[Unit]
+Description=Fluentd: ensure PID file existance
+After=network-online.target local-fs.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStartPre=/bin/mkdir -p /var/run/td-agent/
+ExecStartPre=/usr/bin/touch /var/run/td-agent/td-agent.pid
+ExecStart=/bin/chown td-agent:td-agent /var/run/td-agent/td-agent.pid
+
+[Install]
+WantedBy=multi-user.target

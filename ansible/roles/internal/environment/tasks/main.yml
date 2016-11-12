@@ -1,0 +1,25 @@
+---
+- name: Install boto3
+  pip: name=boto3
+
+- name: Install environment one-shot service script
+  copy:
+    src: set-env-script
+    dest: /usr/local/bin/set-env
+    mode: 0755
+
+- name: Copy environment file
+  template:
+    src: set-env.j2
+    dest: /etc/default/set-env
+    mode: 0644
+
+- name: Install environment service
+  copy:
+    src: environment.service
+    dest: /etc/systemd/system/environment.service
+    mode: 0644
+  notify:
+    - reload systemd
+    - enable environment service
+

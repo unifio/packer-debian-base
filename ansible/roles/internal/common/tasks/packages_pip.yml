@@ -1,0 +1,12 @@
+---
+- name: Install common packages
+  pip: name={{ item }}
+  with_items:
+    - markupsafe
+    - cffi
+    - cryptography
+    - pycrypto
+    - pyyaml
+    - paramiko
+    - awscli
+  become: True

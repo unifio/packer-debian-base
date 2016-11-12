@@ -1,0 +1,21 @@
+[Unit]
+Description=Fluentd: data collector for Treasure Data
+Documentation=http://docs.fluentd.org/
+After=network-online.target td-agent-pid.service environment.service
+Wants=environment.service td-agent-pid.service
+
+[Service]
+Type=forking
+User=td-agent
+Group=td-agent
+UMask=007
+PIDFile=/var/run/td-agent/td-agent.pid
+EnvironmentFile=/etc/default/set-env
+
+ExecStart=/opt/td-agent/embedded/bin/ruby /usr/sbin/td-agent --log /var/log/td-agent/td-agent.log -v --daemon /var/run/td-agent/td-agent.pid
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

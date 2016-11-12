@@ -1,0 +1,9 @@
+---
+- name: reload systemd
+  shell: systemctl daemon-reload
+
+- name: enable environment service
+  shell: systemctl enable environment
+
+- name: restart environment service
+  shell: systemctl restart environment

@@ -1,0 +1,30 @@
+---
+- name: Make perisistent journal directory
+  file:
+    path: /var/log/journal
+    state: directory
+    group: systemd-journal
+    mode: 2755
+
+
+- name: Allow td-agent to read the journal
+  user:
+    append: yes
+    name: td-agent
+    groups: systemd-journal
+
+- name: Install journald log file permissions service
+  copy:
+    src: persistent-journald-permissions.service
+    dest: /etc/systemd/system/
+    mode: 0755
+  notify:
+    - reload systemd
+    - restart td-agent
+
+- name: Enable the journal permissions service
+  shell: "systemctl daemon-reload && systemctl enable persistent-journald-permissions"
+
+# Always restart so the changes take place before td-agent inits
+- name: "Restart the journal"
+  shell: "systemctl restart systemd-journald && systemctl restart persistent-journald-permissions"

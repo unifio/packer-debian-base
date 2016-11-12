@@ -1,0 +1,12 @@
+[Unit]
+Description=Fix journald log file permissions
+After=systemd-journald.service
+Wants=systemd-journald.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/setfacl -Rnm g:systemd-journal:rx,d:g:systemd-journal:rx,m:rx /var/log/journal/
+ExecReload=/bin/setfacl -Rnm g:systemd-journal:rx,d:g:systemd-journal:rx,m:rx /var/log/journal/
+
+[Install]
+WantedBy=multi-user.target

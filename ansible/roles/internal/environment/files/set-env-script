@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+
+import boto3
+import os
+import json
+import yaml
+
+env_vars = {}
+
+if os.path.exists('/etc/default/environment'):
+    with open('/etc/default/environment', 'r') as f:
+        for line in f:
+            if '=' in line:
+                pair = line.strip().split('=')
+                env_vars[pair[0].upper()] = ("%s=%s\n" % (pair[0].upper(), pair[1]))
+
+try:
+    s3 = boto3.resource('s3')
+    object = s3.Object(os.environ["ENV_SOURCE_BUCKET"], os.environ["ENV_SOURCE_KEY"]).download_file('/tmp/environment.json')
+
+    # First pass parse global vars
+    with open('/tmp/environment.json') as f:
+        config_data = json.load(f)
+        for k, v in config_data.items():
+            if k.upper() == "GLOBAL":
+                for k2, v2 in v.items():
+                    env_vars[k2.upper()] = ("%s=%s\n" % (k2.upper(), v2))
+
+    # Second pass parse stack vars
+    with open('/tmp/environment.json') as f:
+        config_data = json.load(f)
+        for k, v in config_data.items():
+            if k.upper() == os.environ["ENV_ROLE"].upper():
+                for k2, v2 in v.items():
+                    env_vars[k2.upper()] = ("%s=%s\n" % (k2.upper(), v2))
+
+except Exception, e:
+    print "Error retrieving configuration from S3: ", e
+
+finally:
+    if os.path.exists('/tmp/environment.json'):
+        os.remove('/tmp/environment.json')
+
+if os.path.exists('/var/lib/cloud/instance/user-data.txt'):
+    with open('/var/lib/cloud/instance/user-data.txt') as f:
+        user_data = yaml.load(f)
+        if (user_data is not None and user_data.has_key('environment')):
+            for k, v in user_data['environment'].iteritems():
+                env_vars[k.upper()] = ("%s=%s\n" % (k.upper(), v))
+
+with open('/etc/default/environment', 'w') as f:
+    f.writelines(env_vars.values())
+
+os.chmod('/etc/default/environment', 0700)

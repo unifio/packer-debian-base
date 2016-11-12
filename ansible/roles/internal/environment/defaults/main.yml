@@ -1,0 +1,3 @@
+---
+s3_env_source_bucket: "{{ lookup('env', 'S3_ENV_SOURCE_BUCKET') | default('tf-unifio-config-data', true) }}"
+s3_env_source_key: "{{ lookup('env', 'S3_ENV_SOURCE_KEY') | default('config.json', true) }}"

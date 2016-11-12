@@ -1,0 +1,6 @@
+---
+# Debian 8.4 base build - Public
+
+debian-base::packer-module: 'modules/debian-base'
+modules::debian-base::packer-template: 'modules/debian-base/aws-local-ansible.yml'
+modules::debian-base::packer-vars-file: 'modules/debian-base/public.yaml'

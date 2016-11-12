@@ -1,0 +1,7 @@
+---
+- name: Install plugins via td-agent-gem
+  shell: "td-agent-gem install {{ item.key }} -v {{ item.value }}"
+  with_dict:
+    fluent-plugin-systemd: '0.0.3'
+    fluent-plugin-cloudwatch-logs: '0.3.1'
+    fluent-plugin-grok-parser: '0.3.1'

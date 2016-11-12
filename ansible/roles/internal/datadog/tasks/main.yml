@@ -1,0 +1,19 @@
+---
+- name: Ensure config directories are present
+  file:
+    path: "/etc/dd-agent/{{ item }}"
+    state: directory
+    mode: 0755
+  with_items:
+    - conf.d
+    - checks.d
+
+- name: Install datadog service
+  copy:
+    src: datadog.service
+    dest: /etc/systemd/system/datadog.service
+    mode: 0644
+  notify:
+    - reload systemd
+    - enable datadog
+    - restart datadog

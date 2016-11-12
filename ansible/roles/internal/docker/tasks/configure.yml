@@ -1,0 +1,9 @@
+---
+- name: Create a docker group
+  group: name={{ docker_group }} state=present
+
+- name: Create and add docker user to docker group
+  user: name={{ docker_user }} group={{ docker_group }} state=present
+
+- name: Enable Docker
+  service: name=docker enabled=yes

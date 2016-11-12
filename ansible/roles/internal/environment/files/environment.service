@@ -1,0 +1,14 @@
+[Unit]
+Description=Set environment variables
+After=network-online.target cloud-final.service
+Requires=network-online.target
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/default/set-env
+ExecStartPre=/bin/sh -c "systemctl set-environment HOSTNAME=$(hostname)"
+ExecStart=/usr/local/bin/set-env
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

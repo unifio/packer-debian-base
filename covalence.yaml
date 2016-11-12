@@ -1,0 +1,21 @@
+---
+:backends:
+  - yaml
+
+:logger: noop
+
+:merge_behavior: 'deeper'
+
+:hierarchy:
+  - "dev/%{environment}-%{stack}-%{tool}"
+  - "dev/%{environment}-%{stack}"
+  - "dev/envs"
+  - "stacks/%{environment}/%{stack}-%{tool}"
+  - "stacks/%{environment}/%{stack}"
+  - "envs/%{environment}"
+  - "globals"
+  - "modules"
+  - "envs"
+
+:yaml:
+   :datadir: data

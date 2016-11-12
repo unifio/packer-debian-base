@@ -1,0 +1,8 @@
+---
+# Environments
+
+environments:
+  prod:
+    - 'debian-base'
+  staging:
+    - 'debian-base'

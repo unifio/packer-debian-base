@@ -1,0 +1,5 @@
+---
+- include: persistent_systemd_journal.yml
+- include: package.yml
+- include: plugins.yml
+- include: configure.yml

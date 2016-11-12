@@ -1,0 +1,13 @@
+---
+# transcribed from https://toolbelt.treasuredata.com/sh/install-debian-jessie-td-agent2.sh
+- name: "Add treasuredata signing key"
+  apt_key: url="https://packages.treasuredata.com/GPG-KEY-td-agent" state=present
+
+- name: "Add treasuredata repo"
+  apt_repository: repo="deb https://packages.treasuredata.com/2/debian/jessie/ jessie contrib" state=present
+
+- name: apt-get update
+  apt: update_cache=yes
+
+- name: Install td-agent
+  apt: pkg=td-agent state=latest force=yes

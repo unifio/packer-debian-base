@@ -1,0 +1,10 @@
+---
+# Unif.io Unstable Environment
+
+## Environment data
+key_name: 'unifio_ops_pub'
+region: 'ap-northeast-1'
+s3_state_bucket: 'tf-unifio-tfstate'
+stack_item_fullname: 'ODF Development Environment'
+stack_item_label: 'unstable-tokyo'
+whitelist: '0.0.0.0/0'

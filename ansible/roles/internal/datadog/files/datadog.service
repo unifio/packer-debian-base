@@ -1,0 +1,30 @@
+[Unit]
+Description=Datadog Container
+After=docker.service environment.service
+Requires=docker.service environment.service
+
+[Service]
+Restart=always
+Environment=DATADOG_VERSION=latest
+EnvironmentFile=/etc/default/environment
+
+ExecStartPre=-/bin/mkdir -p /etc/dd-agent/conf.d
+ExecStartPre=-/usr/bin/docker stop %n
+ExecStartPre=-/usr/bin/docker rm %n
+ExecStartPre=/usr/bin/docker pull datadog/docker-dd-agent:${DATADOG_VERSION}
+ExecStartPre=/bin/sh -c "systemctl set-environment HOSTNAME=$(hostname)"
+ExecStart=/usr/bin/docker run \
+          --log-driver=journald \
+          --rm \
+          --name %n \
+          -h ${HOSTNAME} \
+          -v /var/run/docker.sock:/var/run/docker.sock \
+          -v /proc/:/host/proc/:ro \
+          -v /sys/fs/cgroup/:/host/sys/fs/cgroup:ro \
+          -v /etc/dd-agent/conf.d:/conf.d:ro \
+          -v /etc/dd-agent/checks.d:/checks.d:ro \
+          -e API_KEY=${DATADOG_API_KEY} \
+          datadog/docker-dd-agent:${DATADOG_VERSION}
+
+[Install]
+WantedBy=multi-user.target
