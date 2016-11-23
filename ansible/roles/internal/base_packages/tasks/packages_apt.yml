@@ -3,9 +3,8 @@
   apt: update_cache=yes
 
 - name: Install common packages
-  apt: pkg={{ item }} state=latest force=yes
+  apt: pkg={{ item }} state=latest force=yes install_recommends=no
   with_items:
-    - apt-listchanges
     - apt-transport-https
     - chrony
     - curl
@@ -13,7 +12,6 @@
     - jq
     - python-pip
     - python-yaml #set-env scripts
-    - unattended-upgrades
     - wget
   notify:
     - restart chrony

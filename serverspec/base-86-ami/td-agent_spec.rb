@@ -1,6 +1,10 @@
 require_relative '../spec_helper'
 
 describe "base:td-agent_spec" do
+  describe package('td-agent') do
+    it { should be_installed }
+  end
+
   describe('persistent journald') do
     describe service('systemd-journald') do
       it { should be_enabled }

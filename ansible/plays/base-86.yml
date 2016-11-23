@@ -3,10 +3,21 @@
   become: true
   gather_facts: true
   hosts: default
+  vars:
+    docker_storage_driver: overlay
 
   roles:
     - role: shared_handlers
     - role: base_packages
     - role: logging
+      when: "ansible_connection != 'docker'"
     - role: docker
+      when: "ansible_connection != 'docker'"
     - role: datadog
+      when: "ansible_connection != 'docker'"
+    # needs more testing.
+    # TODO: figure out notification emails via ssmtp
+    - role: unattended_apt_upgrade
+      when: "ansible_connection != 'docker'"
+    - role: ecs_config
+      when: "ansible_connection != 'docker'"

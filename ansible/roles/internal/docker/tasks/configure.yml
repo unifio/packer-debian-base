@@ -5,5 +5,20 @@
 - name: Create and add docker user to docker group
   user: name={{ docker_user }} group={{ docker_group }} state=present
 
+- name: Create docker.d systemd directory if it doesn't exist
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+    mode: 0755
+
+- name: Configure docker daemon service
+  template:
+    src: 10-execstart.conf.j2
+    dest: /etc/systemd/system/docker.service.d/10-execstart.conf
+    mode: 0644
+  notify:
+    - reload systemd
+    - restart docker
+
 - name: Enable Docker
   service: name=docker enabled=yes

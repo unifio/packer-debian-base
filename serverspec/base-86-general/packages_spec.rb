@@ -11,7 +11,6 @@ describe "base:package_spec" do
     jq
     python-pip
     python-yaml
-    td-agent
     vault
     vault-ssh-helper
     wget

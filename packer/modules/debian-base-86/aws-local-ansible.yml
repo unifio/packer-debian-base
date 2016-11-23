@@ -41,8 +41,20 @@ builders:
     tags:
       App: "{{user `slug`}}"
       Release: "{{ user `version` }}"
+  - type: 'docker'
+    image: 'debian:jessie'
+    commit: true
+    run_command: [ "-d", "-i", "-t", "--name", "{{ user `slug` }}", "{{.Image}}", "/bin/bash" ]
 
 provisioners:
+  - type: "shell"
+    inline:
+      - 'apt-get update'
+      - 'apt-get -y install sudo python'
+      - 'echo "deb http://deb.debian.org/debian jessie-backports main" >> /etc/apt/sources.list'
+    only:
+      - "docker"
+
   - type: "shell"
     pause_before: "10s"
     inline:
@@ -50,10 +62,22 @@ provisioners:
       - 'sudo apt-get -y install aptitude ca-certificates'
       - 'sudo update-ca-certificates'
       - 'sudo apt-get -y upgrade'
+
+  - type: "shell"
+    inline:
+      - 'sudo apt-get update'
+      - 'sudo apt-get -y -t jessie-backports install linux-image-4.7.0-0.bpo.1-amd64'
+    except:
+      - "docker"
+
+  - type: "shell"
+    inline:
       # Docker cgroups
       - 'sudo sed -i "s/GRUB_CMDLINE_LINUX_DEFAULT=\"\(.*\)\"/GRUB_CMDLINE_LINUX_DEFAULT=\"\1 cgroup_enable=memory swapaccount=1\"/" /etc/default/grub'
       - 'sudo update-grub'
       - 'sudo shutdown -r now'
+    except:
+      - "docker"
 
   - type: 'ansible'
     pause_before: "30s"
@@ -62,22 +86,64 @@ provisioners:
     ansible_env_vars:
       - "ANSIBLE_ROLES_PATH=:./ansible/roles/internal/:./ansible/roles/external/"
       - "ANSIBLE_HOST_KEY_CHECKING=False"
+    except:
+      - "docker"
+
+  - type: 'ansible'
+    pause_before: "30s"
+    playbook_file: "./ansible/plays/{{ user `ansible_play` }}.yml"
+    extra_arguments: ["-vv"]
+    ansible_env_vars:
+      - "ANSIBLE_ROLES_PATH=:./ansible/roles/internal/:./ansible/roles/external/"
+      - "ANSIBLE_HOST_KEY_CHECKING=False"
+    extra_arguments:
+      - "--extra-vars"
+      - "ansible_host={{user `slug`}} ansible_connection=docker ansible_user=root"
+    only:
+      - "docker"
+
+  - type: "shell"
+    inline:
+      - 'sudo apt-get remove --purge -y build-essential aptitude'
+      - 'sudo apt-get -y autoremove'
+      - 'sudo apt-get clean'
+      - 'sudo rm -rf /var/lib/apt/lists/*'
+    only:
+      - "docker"
 
   - type: 'serverspec'
     rake_file: 'Rakefile.serverspec'
-    rake_task: "serverspec:{{ user `serverspec` }}"
+    rake_task: "serverspec:{{ user `serverspec` }}-general"
     rake_env_vars: '$BUNDLE_GEMFILE=Gemfile'
 
-#post-processors:
-  #-
-    #- type: 'vagrant'
-      #output: "{{ user `slug` }}-{{ user `version` }}.box"
+  - type: 'serverspec'
+    rake_file: 'Rakefile.serverspec'
+    rake_task: "serverspec:{{ user `serverspec` }}-ami"
+    rake_env_vars: '$BUNDLE_GEMFILE=Gemfile'
+    except:
+      - "docker"
 
-    #- type: 'vagrant-s3'
-      #region: "{{user `region`}}"
-      #bucket: "{{user `box_bucket`}}"
-      #manifest: "{{ user `slug` }}"
-      #box_name: "{{ user `slug` }}"
-      #box_dir: 'boxes'
-      #acl: 'authenticated-read'
-      #version: "{{user `version`}}"
+post-processors:
+  -
+    - type: 'docker-tag'
+      repository: 'unifio/debian-base'
+      tag: "{{ user `version` }}"
+      only:
+        - 'docker'
+
+  -
+    - type: 'vagrant'
+      output: "{{ user `slug` }}-{{ user `version` }}.box"
+      only:
+        - 'amazon-ebs'
+
+    - type: 'vagrant-s3'
+      region: "{{user `region`}}"
+      bucket: "{{user `box_bucket`}}"
+      manifest: "{{ user `slug` }}"
+      box_name: "{{ user `slug` }}"
+      box_dir: 'boxes'
+      acl: 'authenticated-read'
+      version: "{{user `version`}}"
+      only:
+        - 'amazon-ebs'
